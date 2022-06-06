@@ -7,8 +7,14 @@ function render(dT, gameEngine) {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
+  // camera placement
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+
   // render player
   gameEngine.state.player.render(dT);
+
+  ctx.restore();
 };
 
 export default {

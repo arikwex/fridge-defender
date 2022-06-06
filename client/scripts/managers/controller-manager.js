@@ -18,11 +18,10 @@ function ControllerManager() {
   };
 
   function tick() {
-    if (keymap['ArrowUp']) { bus.emit('control:up'); }
-    if (keymap['ArrowDown']) { bus.emit('control:down'); }
     if (keymap['ArrowLeft']) { bus.emit('control:left'); }
     if (keymap['ArrowRight']) { bus.emit('control:right'); }
 
+    if (keymap['ArrowUp'] && releasemap['ArrowUp'] === undefined) { bus.emit('control:up'); releasemap['ArrowUp'] = true; }
     if (keymap['z'] && releasemap['z'] === undefined) { bus.emit('control:punch'); releasemap['z'] = true; }
   }
 

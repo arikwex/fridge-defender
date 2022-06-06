@@ -22,6 +22,7 @@ class Player {
     this.punchCount = 0;
     this.timeTillNextPunch = 0;
     this.timeTillPunchReset = 0;
+    this.onGround = false;
 
     // Animation (x, y, angle, flip vertical)
     this.state = STATE.JUMP;
@@ -47,6 +48,16 @@ class Player {
 
     if (!this.isMoving) {
       this.vx -= this.vx * 8.0 * dT;
+    }
+
+    // Physics
+    if (this.y < 0 && !this.onGround) {
+      this.vy += 3820.0 * dT;
+      this.onGround = false;
+    } else {
+      this.y = 0;
+      this.vy = 0;
+      this.onGround = true;
     }
   }
 
@@ -167,12 +178,12 @@ class Player {
       tty = 0;
       tta = 0;
       tlfx = 20;
-      tlfy = 20;
-      tlfa = 1;
+      tlfy = 20 - this.vy * 0.03;
+      tlfa = 1.4;
       tlff = 1;
       trfx = 0;
-      trfy = 30;
-      trfa = 1;
+      trfy = 30 - this.vy * 0.03;
+      trfa = 1.4;
       trff = 1;
     }
 
@@ -191,19 +202,22 @@ class Player {
   }
 
   resetControl() {
-    if (this.state == STATE.WALK) {
+    if (this.timeTillPunchReset > 0) {
+      // Do nothing
+    } else if (!this.onGround) {
+      this.state = STATE.JUMP;
+    } else if (this.state == STATE.WALK) {
       this.state = STATE.IDLE;
-    }
-    if (this.timeTillPunchReset <= 0 && (this.state == STATE.PUNCH_1 || this.state == STATE.PUNCH_2)) {
+    } else {
       this.state = STATE.IDLE;
     }
     this.isMoving = false;
   }
 
   move(dir) {
-    let speed = 230;
-    if (this.timeTillPunchReset > 0) {
-      speed = 230 - this.timeTillPunchReset * 700;
+    let speed = 330;
+    if (this.timeTillPunchReset > 0 && this.onGround) {
+      speed = 330 - this.timeTillPunchReset * 900;
     }
     if (dir > 0) {
       this.faceRight = true;
@@ -212,10 +226,18 @@ class Player {
       this.faceRight = false;
       this.vx = -speed;
     }
-    if (this.timeTillPunchReset <= 0) {
+    if (this.timeTillPunchReset <= 0 && this.onGround) {
       this.state = STATE.WALK;
     }
     this.isMoving = true;
+  }
+
+  jump() {
+    if (!this.onGround) {
+      return;
+    }
+    this.vy = -1000;
+    this.onGround = false;
   }
 
   punch() {
@@ -228,6 +250,10 @@ class Player {
     }
     else {
       this.state = STATE.PUNCH_2;
+    }
+    if (!this.onGround) {
+      if (this.faceRight) { this.vx += 400; }
+      else { this.vx -= 400; }
     }
     this.timeTillNextPunch = 0.0;
     this.timeTillPunchReset = 0.3;

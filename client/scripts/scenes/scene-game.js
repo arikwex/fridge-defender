@@ -11,6 +11,7 @@ function initialize() {
   gameEngine = GameEngine();
   bus.on('control:left', onControlLeft);
   bus.on('control:right', onControlRight);
+  bus.on('control:up', onControlUp);
   bus.on('control:punch', onControlPunch);
   animate();
 }
@@ -19,6 +20,7 @@ function cleanup() {
   window.cancelAnimationFrame(requestAnimate);
   bus.off('control:left', onControlLeft);
   bus.off('control:right', onControlRight);
+  bus.on('control:up', onControlUp);
   bus.off('control:punch', onControlPunch);
   gameEngine = null;
 }
@@ -42,6 +44,10 @@ function onControlLeft() {
 
 function onControlRight() {
   gameEngine.state.player.move(1);
+}
+
+function onControlUp() {
+  gameEngine.state.player.jump();
 }
 
 function onControlPunch() {

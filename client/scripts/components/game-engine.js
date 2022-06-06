@@ -3,7 +3,7 @@ import Player from '../components/player.js';
 
 const GameEngine = () => {
   const state = {
-    player: new Player(50, 50)
+    player: new Player(0, 0)
   };
 
   function update(dT) {
