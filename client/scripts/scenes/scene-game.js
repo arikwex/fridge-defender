@@ -20,7 +20,7 @@ function cleanup() {
   window.cancelAnimationFrame(requestAnimate);
   bus.off('control:left', onControlLeft);
   bus.off('control:right', onControlRight);
-  bus.on('control:up', onControlUp);
+  bus.off('control:up', onControlUp);
   bus.off('control:punch', onControlPunch);
   gameEngine = null;
 }

@@ -1,4 +1,5 @@
 import { ctx } from '../ui/canvas.js';
+import bus from '../bus.js';
 
 const STATE = {
   IDLE: 0,
@@ -67,7 +68,7 @@ class Player {
     this.animate(dT);
 
     ctx.save();
-    ctx.translate(this.x, this.y);
+    ctx.translate(this.x, this.y - 10);
     if (!this.faceRight) {
       ctx.scale(-1, 1);
     }
@@ -255,6 +256,13 @@ class Player {
       if (this.faceRight) { this.vx += 400; }
       else { this.vx -= 400; }
     }
+    let tx = this.x;
+    let ty = this.y;
+    let dx = 0;
+    let dy = 0;
+    if (this.faceRight) { tx += 60; dx = 60; }
+    else { tx -= 60; dx = -60; }
+    bus.emit('punch', { x: tx, y: ty, dx: dx, dy: dy });
     this.timeTillNextPunch = 0.0;
     this.timeTillPunchReset = 0.3;
   }

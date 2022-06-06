@@ -11,8 +11,17 @@ function render(dT, gameEngine) {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
 
+  // Ground
+  ctx.fillStyle = "#aaa";
+  ctx.fillRect(-canvas.width/2, 0, canvas.width, canvas.height/2);
+
   // render player
   gameEngine.state.player.render(dT);
+
+  // render enemies
+  for (const e of gameEngine.state.enemies) {
+    e.render(dT);
+  }
 
   ctx.restore();
 };
