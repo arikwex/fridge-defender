@@ -24,6 +24,7 @@ class Player {
     this.timeTillNextPunch = 0;
     this.timeTillPunchReset = 0;
     this.onGround = false;
+    this.charge = 0;
 
     // Animation (x, y, angle, flip vertical)
     this.state = STATE.JUMP;
@@ -265,6 +266,13 @@ class Player {
     bus.emit('punch', { x: tx, y: ty, dx: dx, dy: dy });
     this.timeTillNextPunch = 0.0;
     this.timeTillPunchReset = 0.3;
+  }
+
+  chargeUp(c) {
+    this.charge += c;
+    if (this.charge >= 100) {
+      this.charge = 100;
+    }
   }
 }
 

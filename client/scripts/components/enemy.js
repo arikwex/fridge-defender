@@ -1,4 +1,50 @@
-import { ctx } from '../ui/canvas.js';
+import bus from '../bus.js';
+import { ctx, canvas } from '../ui/canvas.js';
+
+const TYPE_MAP = {
+  0: {
+    hp: 3,
+    skin: '🍓',
+    dr: 25,
+    mass: 1,
+  },
+  1: {
+    hp: 2,
+    skin: '🥝',
+    dr: 20,
+    mass: 1,
+  },
+  2: {
+    hp: 5,
+    skin: '🍋',
+    dr: 35,
+    mass: 1.5,
+  },
+  3: {
+    hp: 7,
+    skin: '🍌',
+    dr: 40,
+    mass: 1.5,
+  },
+  4: {
+    hp: 9,
+    skin: '🍎',
+    dr: 40,
+    mass: 2,
+  },
+  5: {
+    hp: 14,
+    skin: '🍉',
+    dr: 55,
+    mass: 3,
+  },
+  6: {
+    hp: 20,
+    skin: '🍍',
+    dr: 65,
+    mass: 4,
+  }
+};
 
 class Enemy {
   constructor(x, y, t) {
@@ -16,12 +62,14 @@ class Enemy {
 
     // Enemy type traits
     this.type = t;
-    this.hp = 3;
+    const data = TYPE_MAP[this.type];
+    this.hp = data.hp;
+    this.skin = data.skin;
     this.maxHp = this.hp;
     this.height = 40;
     this.barWidth = 30;
-    this.dr = 25;
-    this.mass = 3;
+    this.dr = data.dr;
+    this.mass = data.mass;
   }
 
   update(dT) {
@@ -33,7 +81,8 @@ class Enemy {
 
       if (!this.isMoving && this.onGround) {
         this.vx -= this.vx * 4.0 * dT;
-        this.omega -= this.omega * 4.0 * dT;
+        this.angle += this.vx * 0.01 * dT;
+        this.omega -= this.omega * 6.0 * dT;
       }
 
       // Physics
@@ -45,6 +94,15 @@ class Enemy {
         this.vy = 0;
         this.onGround = true;
       }
+
+      if (this.x < -canvas.width/2 + 20) {
+        this.x = -canvas.width/2 + 20;
+        this.vx = -this.vx;
+      }
+      if (this.x > canvas.width/2 - 20) {
+        this.x = canvas.width/2 - 20;
+        this.vx = -this.vx;
+      }
     } else {
       this.deathTimer += dT;
     }
@@ -52,7 +110,7 @@ class Enemy {
 
   render(dT) {
     ctx.save();
-    ctx.translate(this.x, this.y - 10);
+    ctx.translate(this.x, this.y - this.dr / 2);
     if (!this.faceRight) {
       ctx.scale(-1, 1);
     }
@@ -64,7 +122,7 @@ class Enemy {
 
     // Shape
     ctx.setTransform(baseXfm);
-    ctx.font = '40px arial';
+    ctx.font = `${40 * this.dr / 25}px arial`;
 
     if (this.hp > 0) {
       ctx.rotate(this.angle);
@@ -75,7 +133,7 @@ class Enemy {
         bright = 1 + Math.pow(this.hitRecently, 2) * 15;
       }
       ctx.filter = `saturate(${sat}) brightness(${bright})`;
-      ctx.fillText('🍓', 0, 0);
+      ctx.fillText(this.skin, 0, 0);
       ctx.filter = 'brightness(1)';
 
       // HP bar
@@ -94,22 +152,29 @@ class Enemy {
   }
 
   hitCheck(punchEvt) {
+    if (this.hp <= 0) {
+      return;
+    }
     const dx = (this.x - punchEvt.x) * 0.5;
     const dy = this.y - punchEvt.y;
     if (dx * dx + dy * dy < this.dr * this.dr) {
       this.hit(1);
-      this.vy -= (600 + Math.random() * 300) / this.mass;
+      this.vy -= (1000 + Math.random() * 700) / this.mass;
       this.onGround = false;
       this.vx += punchEvt.dx * 10 / this.mass;
-      this.omega = ((Math.random() - 0.5) * 40  + punchEvt.dx / 5) / this.mass;
+      this.omega = ((Math.random() - 0.5) * 40) / this.mass;
     }
   }
 
   hit(hp) {
+    if (this.hp <= 0) {
+      return;
+    }
     this.hp -= hp;
     this.hitRecently = 0.5;
     if (this.hp <= 0) {
       this.hp = 0;
+      bus.emit('killed', this);
     }
   }
 }
