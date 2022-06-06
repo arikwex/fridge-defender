@@ -168,7 +168,7 @@ class Enemy {
     }
   }
 
-  hit(hp) {
+  hit(hp, allowCharge = true) {
     if (this.hp <= 0) {
       return;
     }
@@ -176,8 +176,19 @@ class Enemy {
     this.hitRecently = 0.5;
     if (this.hp <= 0) {
       this.hp = 0;
-      bus.emit('killed', this);
+      bus.emit('killed', { allowCharge });
     }
+  }
+
+  boom(evt) {
+    const dx = this.x - evt.x;
+    const dy = this.y - evt.y;
+    const M = Math.sqrt(dx * dx + dy * dy);
+    this.vx += (Math.random() - 0.5) * 1500 / this.mass;
+    this.vy += -Math.random() * 1500 / this.mass - 500;
+    this.onGround = false;
+    this.omega = (Math.random() - 0.5) * 40;
+    this.hit(1000 / (10 + M), false);
   }
 
   checkCollisions(gameEngine) {
@@ -191,8 +202,8 @@ class Enemy {
         const n = Math.sqrt(dM2);
         this.x = this.x + dx / n;
         this.y = this.y + dy / n;
-        this.vx = e.vx * 0.9;
-        this.vy = e.vy * 0.9;
+        this.vx = -e.vx;
+        this.vy = -e.vy;
       }
     }
   }

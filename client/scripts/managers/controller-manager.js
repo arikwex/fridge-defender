@@ -23,6 +23,7 @@ function ControllerManager() {
 
     if (keymap['ArrowUp'] && releasemap['ArrowUp'] === undefined) { bus.emit('control:up'); releasemap['ArrowUp'] = true; }
     if (keymap['z'] && releasemap['z'] === undefined) { bus.emit('control:punch'); releasemap['z'] = true; }
+    if (keymap['x'] && releasemap['x'] === undefined) { bus.emit('control:special');  releasemap['x'] = true; }
   }
 
   return {

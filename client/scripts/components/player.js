@@ -268,6 +268,13 @@ class Player {
     this.timeTillPunchReset = 0.3;
   }
 
+  special() {
+    if (this.charge >= 100) {
+      bus.emit('boom', { x: this.x, y: this.y });
+      this.charge = 0;
+    }
+  }
+
   chargeUp(c) {
     this.charge += c;
     if (this.charge >= 100) {

@@ -13,6 +13,7 @@ function initialize() {
   bus.on('control:right', onControlRight);
   bus.on('control:up', onControlUp);
   bus.on('control:punch', onControlPunch);
+  bus.on('control:special', onControlSpecial);
   bus.on('game-over', onGameOver);
   animate();
 }
@@ -23,6 +24,7 @@ function cleanup() {
   bus.off('control:right', onControlRight);
   bus.off('control:up', onControlUp);
   bus.off('control:punch', onControlPunch);
+  bus.off('control:special', onControlSpecial);
   bus.off('game-over', onGameOver);
   gameEngine = null;
 }
@@ -58,6 +60,11 @@ function onControlUp() {
 function onControlPunch() {
   if (gameEngine.state.gameOver) { return; }
   gameEngine.state.player.punch();
+}
+
+function onControlSpecial() {
+  if (gameEngine.state.gameOver) { return; }
+  gameEngine.state.player.special();
 }
 
 function onGameOver() {

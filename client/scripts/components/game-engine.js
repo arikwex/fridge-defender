@@ -9,6 +9,7 @@ const GameEngine = () => {
     enemies: [],
     killCounter: 0,
     spawnTimer: 11111,
+    nuke: 0,
     gameOver: false,
   };
 
@@ -17,6 +18,7 @@ const GameEngine = () => {
       return;
     }
     state.spawnTimer += dT;
+    state.nuke -= dT;
     state.player.update(dT);
 
     const removeList = [];
@@ -30,13 +32,13 @@ const GameEngine = () => {
       state.enemies = state.enemies.filter((e) => !removeList.includes(e));
     }
 
-    if (state.spawnTimer > 0.5) {//Math.max(3.0 - state.killCounter / 10, 0.7)) {
+    if (state.spawnTimer > Math.max(2.5 - state.killCounter / 20, 0.5)) {
       state.spawnTimer = 0;
       let maxDif = Math.min(7, state.killCounter * 0.2 + 0.5);
       state.enemies.push(new Enemy(canvas.width * (Math.random() - 0.5), -canvas.height/2 - 50, parseInt(Math.random() * maxDif)));
     }
 
-    if (state.enemies.length >= 30) {
+    if (liveEnemies() >= 30) {
       state.gameOver = true;
       bus.emit('game-over');
     }
@@ -56,13 +58,23 @@ const GameEngine = () => {
     }
   }
 
+  function onBoom(evt) {
+    for (const e of state.enemies) {
+      e.boom(evt);
+    }
+    state.nuke = 1;
+  }
+
   function onEnemyKilled(evt) {
     state.killCounter += 1;
-    state.player.chargeUp(5);
+    if (evt.allowCharge) {
+      state.player.chargeUp(10);
+    }
   }
 
   // Game events
   bus.on('punch', onPunch);
+  bus.on('boom', onBoom);
   bus.on('killed', onEnemyKilled);
 
   return {

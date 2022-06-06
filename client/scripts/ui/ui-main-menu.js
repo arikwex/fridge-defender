@@ -9,7 +9,7 @@ function render() {
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#f47';
   ctx.font = '5em Jaldi';
-  ctx.fillText('Fridge', canvas.width / 2, canvas.height * 0.3);
+  ctx.fillText('🤖 Fridge 🤜', canvas.width / 2, canvas.height * 0.3);
   ctx.font = '4em Jaldi';
   ctx.fillText('Defender', canvas.width / 2, canvas.height * 0.4);
 
