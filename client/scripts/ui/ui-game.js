@@ -2,13 +2,13 @@ import { ctx, canvas } from './canvas';
 
 function rotLevel(l) {
   if (l < 5) {
-    return 'Fresh';
-  } else if (l < 10) {
-    return 'Sour';
+    return `Fresh - ${l} / 30`;
   } else if (l < 15) {
-    return 'Putrid';
+    return `Sour - ${l} / 30`;
+  } else if (l < 30) {
+    return `Putrid - ${l} / 30`;
   } else {
-    return 'Rotten';
+    return `Rotten!!! - ${l} / 30`;
   }
 }
 
@@ -70,6 +70,16 @@ function render(dT, gameEngine) {
   ctx.fillText(`🔋`, 30, canvas.height - 150);
   ctx.textAlign = 'left';
   ctx.fillText(`${gameEngine.state.player.charge}%`, 60, canvas.height - 150);
+
+  if (gameEngine.state.gameOver) {
+    ctx.fillStyle = '#333';
+    ctx.fillRect(0, canvas.height/4-50, canvas.width, 100);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f00';
+    ctx.font = '60px arial';
+    ctx.fillText(`GAME OVER - Too much rot!`, canvas.width/2, canvas.height/4);
+  }
 };
 
 export default {

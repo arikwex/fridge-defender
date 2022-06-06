@@ -13,6 +13,7 @@ function initialize() {
   bus.on('control:right', onControlRight);
   bus.on('control:up', onControlUp);
   bus.on('control:punch', onControlPunch);
+  bus.on('game-over', onGameOver);
   animate();
 }
 
@@ -22,6 +23,7 @@ function cleanup() {
   bus.off('control:right', onControlRight);
   bus.off('control:up', onControlUp);
   bus.off('control:punch', onControlPunch);
+  bus.off('game-over', onGameOver);
   gameEngine = null;
 }
 
@@ -39,19 +41,29 @@ function animate() {
 }
 
 function onControlLeft() {
+  if (gameEngine.state.gameOver) { return; }
   gameEngine.state.player.move(-1);
 }
 
 function onControlRight() {
+  if (gameEngine.state.gameOver) { return; }
   gameEngine.state.player.move(1);
 }
 
 function onControlUp() {
+  if (gameEngine.state.gameOver) { return; }
   gameEngine.state.player.jump();
 }
 
 function onControlPunch() {
+  if (gameEngine.state.gameOver) { return; }
   gameEngine.state.player.punch();
+}
+
+function onGameOver() {
+  setTimeout(() => {
+    transition(SCENES.MAIN_MENU);
+  }, 3000);
 }
 
 export default {

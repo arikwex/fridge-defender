@@ -3,43 +3,43 @@ import { ctx, canvas } from '../ui/canvas.js';
 
 const TYPE_MAP = {
   0: {
-    hp: 3,
+    hp: 2,
     skin: '🍓',
     dr: 25,
     mass: 1,
   },
   1: {
-    hp: 2,
+    hp: 3,
     skin: '🥝',
     dr: 20,
     mass: 1,
   },
   2: {
-    hp: 5,
+    hp: 4,
     skin: '🍋',
     dr: 35,
     mass: 1.5,
   },
   3: {
-    hp: 7,
+    hp: 5,
     skin: '🍌',
     dr: 40,
     mass: 1.5,
   },
   4: {
-    hp: 9,
+    hp: 6,
     skin: '🍎',
     dr: 40,
     mass: 2,
   },
   5: {
-    hp: 14,
+    hp: 7,
     skin: '🍉',
     dr: 55,
     mass: 3,
   },
   6: {
-    hp: 20,
+    hp: 8,
     skin: '🍍',
     dr: 65,
     mass: 4,
@@ -72,7 +72,7 @@ class Enemy {
     this.mass = data.mass;
   }
 
-  update(dT) {
+  update(dT, gameEngine) {
     if (this.hp > 0) {
       this.hitRecently -= dT;
       this.x += this.vx * dT;
@@ -103,6 +103,8 @@ class Enemy {
         this.x = canvas.width/2 - 20;
         this.vx = -this.vx;
       }
+
+      this.checkCollisions(gameEngine);
     } else {
       this.deathTimer += dT;
     }
@@ -175,6 +177,23 @@ class Enemy {
     if (this.hp <= 0) {
       this.hp = 0;
       bus.emit('killed', this);
+    }
+  }
+
+  checkCollisions(gameEngine) {
+    for (const e of gameEngine.state.enemies) {
+      if (e == this) { continue; }
+      const dx = this.x - e.x;
+      const dy = this.y - e.y;
+      const dr = this.dr + e.dr - 5;
+      const dM2 = dx * dx + dy * dy;
+      if (dM2 < dr * dr) {
+        const n = Math.sqrt(dM2);
+        this.x = this.x + dx / n;
+        this.y = this.y + dy / n;
+        this.vx = e.vx * 0.9;
+        this.vy = e.vy * 0.9;
+      }
     }
   }
 }

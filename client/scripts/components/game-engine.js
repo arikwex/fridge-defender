@@ -9,15 +9,19 @@ const GameEngine = () => {
     enemies: [],
     killCounter: 0,
     spawnTimer: 11111,
+    gameOver: false,
   };
 
   function update(dT) {
+    if (state.gameOver) {
+      return;
+    }
     state.spawnTimer += dT;
     state.player.update(dT);
 
     const removeList = [];
     for (const e of state.enemies) {
-      e.update(dT);
+      e.update(dT, this);
       if (e.deathTimer > 2) {
         removeList.push(e);
       }
@@ -26,10 +30,15 @@ const GameEngine = () => {
       state.enemies = state.enemies.filter((e) => !removeList.includes(e));
     }
 
-    if (state.spawnTimer > Math.max(3.0 - state.killCounter / 10, 0.5)) {
+    if (state.spawnTimer > 0.5) {//Math.max(3.0 - state.killCounter / 10, 0.7)) {
       state.spawnTimer = 0;
-      let maxDif = Math.min(7, state.killCounter * 0.3);
+      let maxDif = Math.min(7, state.killCounter * 0.2 + 0.5);
       state.enemies.push(new Enemy(canvas.width * (Math.random() - 0.5), -canvas.height/2 - 50, parseInt(Math.random() * maxDif)));
+    }
+
+    if (state.enemies.length >= 30) {
+      state.gameOver = true;
+      bus.emit('game-over');
     }
   }
 
