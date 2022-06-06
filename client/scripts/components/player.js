@@ -18,6 +18,10 @@ class Player {
     this.vx = 0;
     this.vy = 0;
     this.faceRight = true;
+    this.isMoving = false;
+    this.punchCount = 0;
+    this.timeTillNextPunch = 0;
+    this.timeTillPunchReset = 0;
 
     // Animation (x, y, angle, flip vertical)
     this.state = STATE.JUMP;
@@ -36,6 +40,14 @@ class Player {
   }
 
   update(dT) {
+    this.x += this.vx * dT;
+    this.y += this.vy * dT;
+    this.timeTillNextPunch -= dT;
+    this.timeTillPunchReset -= dT;
+
+    if (!this.isMoving) {
+      this.vx -= this.vx * 8.0 * dT;
+    }
   }
 
   render(dT) {
@@ -45,6 +57,9 @@ class Player {
 
     ctx.save();
     ctx.translate(this.x, this.y);
+    if (!this.faceRight) {
+      ctx.scale(-1, 1);
+    }
     const baseXfm = ctx.getTransform();
 
     ctx.textAlign = 'center';
@@ -75,12 +90,6 @@ class Player {
     ctx.fillText('🤜', 0, 0);
 
     ctx.restore();
-
-    // if (this.anim > 0.5) {
-    //   if (this.state == STATE.PUNCH_1) { this.state = STATE.PUNCH_2; }
-    //   else if (this.state == STATE.PUNCH_2) { this.state = STATE.PUNCH_1; }
-    //   this.anim = 0;
-    // }
   }
 
   animate(dT) {
@@ -114,18 +123,18 @@ class Player {
       ttx = 0;
       tty = -Math.abs(Math.sin((this.anim + 0.5) * 8.5)) * 4;
       tta = 0;
-      tlfx = 20 + Math.sin(this.anim * 17) * 20;
-      tlfy = -10 + Math.abs(Math.cos(this.anim * 17)) * 10;
-      tlfa = -Math.sin(this.anim * 17) * 0.4 - 0.2;
+      tlfx = 20 + Math.sin(this.anim * 17) * 11;
+      tlfy = -1 + Math.abs(Math.cos(this.anim * 17)) * 5;
+      tlfa = -Math.sin(this.anim * 17) * 0.2 - 0.2;
       tlff = -1;
-      trfx = 0 + Math.sin((this.anim + 3.14) * 17) * 20;
-      trfy = -4 + Math.abs(Math.cos((this.anim + 3.14) * 17)) * 10;
-      trfa = -Math.sin((this.anim + 3.14) * 17) * 0.4 - 0.2;
+      trfx = 0 + Math.sin((this.anim + 3.14) * 17) * 11;
+      trfy = 5 + Math.abs(Math.cos((this.anim + 3.14) * 17)) * 5;
+      trfa = -Math.sin((this.anim + 3.14) * 17) * 0.2 - 0.2;
       trff = -1;
     }
     else if (this.state == STATE.PUNCH_1) {
       const a = this.anim;
-      const q = Math.exp(-a * 20);
+      const q = Math.exp(-a * 10);
       ttx = -q * 4;
       tty = 0;
       tta = (1 - q) * 0.3;
@@ -133,18 +142,18 @@ class Player {
       tlfy = -8;
       tlfa = -0.7 - (1 - q) * 0.5;
       tlff = -1;
-      trfx = (1 - q) * 70;
+      trfx = -30 + (1 - q) * 100;
       trfy = 2;
       trfa = 0;
       trff = -q + 0.5;
     }
     else if (this.state == STATE.PUNCH_2) {
       const a = this.anim;
-      const q = Math.exp(-a * 20);
+      const q = Math.exp(-a * 10);
       ttx = -q * 4;
       tty = 0;
       tta = (1 - q) * 0.3;
-      tlfx = (1 - q) * 70;
+      tlfx = -30 + (1 - q) * 100;
       tlfy = -5;
       tlfa = 0;
       tlff = -q + 0.5;
@@ -179,6 +188,49 @@ class Player {
     this.rfy += (trfy - this.rfy) * k * dT;
     this.rfa += (trfa - this.rfa) * k * dT;
     this.rff += (trff - this.rff) * k * dT;
+  }
+
+  resetControl() {
+    if (this.state == STATE.WALK) {
+      this.state = STATE.IDLE;
+    }
+    if (this.timeTillPunchReset <= 0 && (this.state == STATE.PUNCH_1 || this.state == STATE.PUNCH_2)) {
+      this.state = STATE.IDLE;
+    }
+    this.isMoving = false;
+  }
+
+  move(dir) {
+    let speed = 230;
+    if (this.timeTillPunchReset > 0) {
+      speed = 230 - this.timeTillPunchReset * 700;
+    }
+    if (dir > 0) {
+      this.faceRight = true;
+      this.vx = speed;
+    } else {
+      this.faceRight = false;
+      this.vx = -speed;
+    }
+    if (this.timeTillPunchReset <= 0) {
+      this.state = STATE.WALK;
+    }
+    this.isMoving = true;
+  }
+
+  punch() {
+    if (this.timeTillNextPunch > 0) {
+      return;
+    }
+    this.punchCount += 1;
+    if (this.punchCount % 2 == 0) {
+      this.state = STATE.PUNCH_1;
+    }
+    else {
+      this.state = STATE.PUNCH_2;
+    }
+    this.timeTillNextPunch = 0.0;
+    this.timeTillPunchReset = 0.3;
   }
 }
 

@@ -6,8 +6,13 @@ const GameEngine = () => {
     player: new Player(50, 50)
   };
 
+  function update(dT) {
+    state.player.update(dT);
+  }
+
   return {
     state,
+    update,
   };
 };
 
